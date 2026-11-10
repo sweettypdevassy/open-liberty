@@ -154,3 +154,19 @@ ZOSAIO_ACTIVATED.useraction=Non \u00e8 richiesta alcuna azione.
 ZOSAIO_DEACTIVATED=CWWKO0230I: \u00c8 stato disattivato il supporto I/O asincrono nativo per z/OS.
 ZOSAIO_DEACTIVATED.explanation=Viene disattivato il servizio I/O socket TCP/IP asincrono per Liberty (AsyncIO) su z/OS, che fornisce capability di base di un package I/O asincrono al livello del sistema operativo.
 ZOSAIO_DEACTIVATED.useraction=Non \u00e8 richiesta alcuna azione.
+
+netty.handler.removed.from.pipeline=CWWKO0231W: Il gestore del canale ` {0} ` Netty \u00e8 stato rimosso da una pipeline di connessione attiva.
+netty.handler.removed.from.pipeline.explanation=Un gestore di canale " Netty ", necessario per il corretto funzionamento della connessione, \u00e8 stato rimosso in modo imprevisto mentre il canale era attivo.
+netty.handler.removed.from.pipeline.useraction=Se questo messaggio continua a comparire, raccogliere le informazioni di tracciamento diagnostico e contattare il supporto di IBM.
+
+# read.timeout=CWWKO1713W: An HTTP read operation timed out: {0}
+# read.timeout.explanation=An inbound HTTP connection did not receive data within the configured read timeout period.
+# read.timeout.useraction=Check the network connection or increase the read timeout value in the HTTP endpoint configuration.
+
+# write.timeout=CWWKO1714W: An HTTP write operation timed out: {0}
+# write.timeout.explanation=An outbound HTTP write operation did not complete within the configured write timeout period.
+# write.timeout.useraction=Check the network connection or increase the write timeout value in the HTTP endpoint configuration.
+
+# h2.idle.timeout=CWWKO1715W: An HTTP/2 connection closed because of an idle timeout: {0}
+# h2.idle.timeout.explanation=The HTTP/2 connection was idle for longer than the configured idle timeout period, so the server closed the connection.
+# h2.idle.timeout.useraction=Check the network connection or increase the HTTP/2 connection idle timeout value in the HTTP endpoint configuration.

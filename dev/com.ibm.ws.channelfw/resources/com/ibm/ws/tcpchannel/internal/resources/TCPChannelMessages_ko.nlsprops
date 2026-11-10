@@ -154,3 +154,19 @@ ZOSAIO_ACTIVATED.useraction=\uc870\uce58\uac00 \ud544\uc694\ud558\uc9c0 \uc54a\u
 ZOSAIO_DEACTIVATED=CWWKO0230I: z/OS\uc5d0 \ub300\ud55c \uace0\uc720 \ube44\ub3d9\uae30 I/O \uc9c0\uc6d0\uc774 \ube44\ud65c\uc131\ud654\ub418\uc5c8\uc2b5\ub2c8\ub2e4.
 ZOSAIO_DEACTIVATED.explanation=\uc6b4\uc601 \uccb4\uc81c \ub808\ubca8\uc5d0\uc11c \ube44\ub3d9\uae30 I/O \ud328\ud0a4\uc9c0\uc758 \uae30\ubcf8 \uae30\ub2a5\uc744 \uc81c\uacf5\ud558\ub294 z/OS \uc11c\ube44\uc2a4\uc758 Liberty\uc6a9 \ube44\ub3d9\uae30 TCP/IP \uc18c\ucf13 I/O(AsyncIO)\uac00 \ube44\ud65c\uc131\ud654\ub418\uc5c8\uc2b5\ub2c8\ub2e4.
 ZOSAIO_DEACTIVATED.useraction=\uc870\uce58\uac00 \ud544\uc694\ud558\uc9c0 \uc54a\uc74c
+
+netty.handler.removed.from.pipeline=CWWKO0231W: {0} Netty \ucc44\ub110 \ud578\ub4e4\ub7ec\uac00 \ud65c\uc131 \uc5f0\uacb0 \ud30c\uc774\ud504\ub77c\uc778\uc5d0\uc11c \uc81c\uac70\ub418\uc5c8\uc2b5\ub2c8\ub2e4.
+netty.handler.removed.from.pipeline.explanation=\uc5f0\uacb0\uc774 \uc815\uc0c1\uc801\uc73c\ub85c \uc791\ub3d9\ud558\ub294 \ub370 \ud544\uc694\ud55c Netty \ucc44\ub110 \ud578\ub4e4\ub7ec\uac00, \ucc44\ub110\uc774 \ud65c\uc131\ud654\ub41c \uc0c1\ud0dc\uc5d0\uc11c \uc608\uae30\uce58 \uc54a\uac8c \uc81c\uac70\ub418\uc5c8\uc2b5\ub2c8\ub2e4.
+netty.handler.removed.from.pipeline.useraction=\uc774 \uba54\uc2dc\uc9c0\uac00 \uacc4\uc18d \ud45c\uc2dc\ub418\uba74 \uc9c4\ub2e8 \ucd94\uc801 \uc815\ubcf4\ub97c \uc218\uc9d1\ud55c \ud6c4 IBM \uc9c0\uc6d0\ud300\uc5d0 \ubb38\uc758\ud558\uc2ed\uc2dc\uc624.
+
+# read.timeout=CWWKO1713W: An HTTP read operation timed out: {0}
+# read.timeout.explanation=An inbound HTTP connection did not receive data within the configured read timeout period.
+# read.timeout.useraction=Check the network connection or increase the read timeout value in the HTTP endpoint configuration.
+
+# write.timeout=CWWKO1714W: An HTTP write operation timed out: {0}
+# write.timeout.explanation=An outbound HTTP write operation did not complete within the configured write timeout period.
+# write.timeout.useraction=Check the network connection or increase the write timeout value in the HTTP endpoint configuration.
+
+# h2.idle.timeout=CWWKO1715W: An HTTP/2 connection closed because of an idle timeout: {0}
+# h2.idle.timeout.explanation=The HTTP/2 connection was idle for longer than the configured idle timeout period, so the server closed the connection.
+# h2.idle.timeout.useraction=Check the network connection or increase the HTTP/2 connection idle timeout value in the HTTP endpoint configuration.

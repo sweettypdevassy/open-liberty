@@ -15,15 +15,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.Builder;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -92,7 +83,7 @@ public class OidcTests extends FATServletClient {
     }
 
     private void testUnauthroizedToolCallAssertion(String toolName) throws Exception {
-        McpClient client = new McpClient(server, "/oidcTests", StateMode.STATELESS);
+        McpClient client = McpClient.builder(server, "/oidcTests").mode(StateMode.STATELESS).build();
         String request = String.format("""
                           {
                           "jsonrpc": "2.0",
@@ -105,7 +96,7 @@ public class OidcTests extends FATServletClient {
                         }
                         """, toolName);
 
-        McpDetailedAuthResponse mcpResponse = client.callMCP401AuthErrorExpected(request);
+        McpDetailedAuthResponse mcpResponse = client.callMCPRaw(request).expectedStatus(401).run();
         assertEquals(401, mcpResponse.statusCode());
 
         String wwwAuthenticate = mcpResponse.wwwAuthenticate();
@@ -119,7 +110,7 @@ public class OidcTests extends FATServletClient {
         String accessToken = getAccessToken(TEST_USER_USERNAME, TEST_PASSWORD);
         assertNotNull("Access token should not be null", accessToken);
 
-        McpClient client = new McpClient(server, "/oidcTests", StateMode.STATELESS, accessToken);
+        McpClient client = McpClient.builder(server, "/oidcTests").mode(StateMode.STATELESS).bearerToken(accessToken).build();
 
         String request = """
                         {
@@ -133,7 +124,7 @@ public class OidcTests extends FATServletClient {
                         }
                         """;
 
-        String response = client.callMCPWithBearerToken(request);
+        String response = client.callMCP(request);
         String expectedResponseString = """
                         {"id":1,"jsonrpc":"2.0","result":{"content":[{"type":"text","text":"Hello you basic user"}], "isError": false}}
                         """;
@@ -146,7 +137,7 @@ public class OidcTests extends FATServletClient {
         String accessToken = getAccessToken(TEST_ADMIN_USERNAME, TEST_PASSWORD);
         assertNotNull("Access token should not be null", accessToken);
 
-        McpClient client = new McpClient(server, "/oidcTests", StateMode.STATELESS, accessToken);
+        McpClient client = McpClient.builder(server, "/oidcTests").mode(StateMode.STATELESS).bearerToken(accessToken).build();
 
         String request = """
                         {
@@ -160,7 +151,7 @@ public class OidcTests extends FATServletClient {
                         }
                         """;
 
-        String response = client.callMCPWithBearerToken(request);
+        String response = client.callMCP(request);
         String expectedResponseString = """
                         {"id":1,"jsonrpc":"2.0","result":{"content":[{"type":"text","text":"Hello you basic user"}], "isError": false}}
                         """;
@@ -173,7 +164,7 @@ public class OidcTests extends FATServletClient {
         String accessToken = getAccessToken(TEST_ADMIN_USERNAME, TEST_PASSWORD);
         assertNotNull("Access token should not be null", accessToken);
 
-        McpClient client = new McpClient(server, "/oidcTests", StateMode.STATELESS, accessToken);
+        McpClient client = McpClient.builder(server, "/oidcTests").mode(StateMode.STATELESS).bearerToken(accessToken).build();
 
         String request = """
                         {
@@ -187,7 +178,7 @@ public class OidcTests extends FATServletClient {
                         }
                         """;
 
-        String response = client.callMCPWithBearerToken(request);
+        String response = client.callMCP(request);
         String expectedResponseString = """
                         {"id":1,"jsonrpc":"2.0","result":{"content":[{"type":"text","text":"Hello you handsome admin!"}], "isError": false}}
                         """;
@@ -200,7 +191,7 @@ public class OidcTests extends FATServletClient {
         String accessToken = getAccessToken(TEST_USER_USERNAME, TEST_PASSWORD);
         assertNotNull("Access token should not be null", accessToken);
 
-        McpClient client = new McpClient(server, "/oidcTests", StateMode.STATELESS, accessToken);
+        McpClient client = McpClient.builder(server, "/oidcTests").mode(StateMode.STATELESS).bearerToken(accessToken).build();
 
         String request = """
                         {
@@ -214,52 +205,13 @@ public class OidcTests extends FATServletClient {
                         }
                         """;
 
-        client.callMCPWithBearerTokenAuthorisationErrorExpected(request);
-    }
-
-    private String getAccessToken(String username, String password) throws Exception {
-        Pattern accessTokenPattern = Pattern.compile("\"access_token\"\\s*:\\s*\"([^\"]+)\"");
-
-        String tokenEndpoint = keycloakContainer.getBaseUrl()
-                               + "/realms/" + KeycloakContainer.REALM + "/protocol/openid-connect/token";
-
-        String formData = String.join("&",
-                                      "client_id=" + encode(KeycloakContainer.PUBLIC_CLIENT_ID),
-                                      "username=" + encode(username),
-                                      "password=" + encode(password),
-                                      "grant_type=password");
-
-        Builder requestBuilder = HttpRequest.newBuilder()
-                                            .uri(URI.create(tokenEndpoint))
-                                            .header("Content-Type", "application/x-www-form-urlencoded")
-                                            .POST(HttpRequest.BodyPublishers.ofString(formData));
-
-        HttpResponse<String> response = keycloakContainer.getHttpClient().send(requestBuilder.build(), BodyHandlers.ofString());
-
-        if (response.statusCode() != 200) {
-            throw new RuntimeException("Failed to get access token. Status: " + response.statusCode()
-                                       + "\nBody: " + response.body());
-        }
-
-        Matcher matcher = accessTokenPattern.matcher(response.body());
-        if (!matcher.find()) {
-            throw new RuntimeException("No access_token found in Keycloak response: " + response.body());
-        }
-
-        return matcher.group(1);
+        client.callMCPRaw(request).expectedStatus(403).run();
     }
 
     /**
-     * URL encodes a string value using UTF-8 encoding.
-     *
-     * This makes values safe to put inside that form body. Without encoding, special characters could break the request.
-     *
-     * For example, encode("user@example.com") becomes user%40example.com.
-     *
-     * @param value the string to be URL encoded
-     * @return the URL encoded string
+     * Obtains an access token from Keycloak for the given user via the ROPC grant.
      */
-    private static String encode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    private String getAccessToken(String username, String password) throws Exception {
+        return keycloakContainer.obtainAccessToken(username, password);
     }
 }

@@ -154,3 +154,19 @@ ZOSAIO_ACTIVATED.useraction=No se requiere ninguna acci\u00f3n.
 ZOSAIO_DEACTIVATED=CWWKO0230I: El soporte de E/S as\u00edncrona nativo para z/OS se ha desactivado.
 ZOSAIO_DEACTIVATED.explanation=El servicio de E/S de sockets TCP/IP as\u00edncrona para Liberty (AsyncIO) en z/OS, que proporciona prestaciones b\u00e1sicas de un paquete de E/S as\u00edncrona a nivel de sistema operativo, se ha desactivado.
 ZOSAIO_DEACTIVATED.useraction=No se requiere ninguna acci\u00f3n.
+
+netty.handler.removed.from.pipeline=CWWKO0231W: Se ha eliminado el controlador de canal \u00ab {0} \u00bb Netty de una canalizaci\u00f3n de conexi\u00f3n activa.
+netty.handler.removed.from.pipeline.explanation=Se ha eliminado de forma inesperada un controlador de canal de \u00ab Netty \u00bb necesario para el correcto funcionamiento de la conexi\u00f3n, mientras el canal estaba activo.
+netty.handler.removed.from.pipeline.useraction=Si este mensaje persiste, recopila informaci\u00f3n de seguimiento de diagn\u00f3stico y ponte en contacto con el servicio de asistencia de IBM.
+
+# read.timeout=CWWKO1713W: An HTTP read operation timed out: {0}
+# read.timeout.explanation=An inbound HTTP connection did not receive data within the configured read timeout period.
+# read.timeout.useraction=Check the network connection or increase the read timeout value in the HTTP endpoint configuration.
+
+# write.timeout=CWWKO1714W: An HTTP write operation timed out: {0}
+# write.timeout.explanation=An outbound HTTP write operation did not complete within the configured write timeout period.
+# write.timeout.useraction=Check the network connection or increase the write timeout value in the HTTP endpoint configuration.
+
+# h2.idle.timeout=CWWKO1715W: An HTTP/2 connection closed because of an idle timeout: {0}
+# h2.idle.timeout.explanation=The HTTP/2 connection was idle for longer than the configured idle timeout period, so the server closed the connection.
+# h2.idle.timeout.useraction=Check the network connection or increase the HTTP/2 connection idle timeout value in the HTTP endpoint configuration.

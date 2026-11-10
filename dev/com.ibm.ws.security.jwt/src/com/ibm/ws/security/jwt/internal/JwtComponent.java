@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 IBM Corporation and others.
+ * Copyright (c) 2016, 2026 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
@@ -40,18 +40,22 @@ import com.ibm.websphere.kernel.server.ServerInfoMBean;
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.websphere.ras.annotation.Sensitive;
+import com.ibm.ws.kernel.productinfo.ProductInfo;
 import com.ibm.ws.security.common.config.CommonConfigUtils;
 import com.ibm.ws.security.common.crypto.KeyAlgorithmChecker;
 import com.ibm.ws.security.common.jwk.impl.JWKProvider;
 import com.ibm.ws.security.jwt.config.JwtConfig;
 import com.ibm.ws.security.jwt.config.JwtConfigUtil;
 import com.ibm.ws.security.jwt.utils.JwtUtils;
+import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
 import com.ibm.ws.webcontainer.security.jwk.JSONWebKey;
 
 @Component(service = JwtConfig.class, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE, configurationPid = "com.ibm.ws.security.jwt.builder", name = "jwtConfig", property = "service.vendor=IBM")
 public class JwtComponent implements JwtConfig {
 
     private static final TraceComponent tc = Tr.register(JwtComponent.class);
+
+    private static boolean issuedBetaMessage = false;
 
     private String issuer = null;
     private String issuerUrl = null;
@@ -70,10 +74,12 @@ public class JwtComponent implements JwtConfig {
     private String trustedAlias;
     private long jwkRotationTime;
     private int jwkSigningKeySize;
+    private int jwkMaxKeys;
     private String keyManagementKeyAlgorithm;
     private String keyManagementKeyAlias;
     private String contentEncryptionAlgorithm;
     private long nbfOffsetTime;
+    private String workloadIdentityClaim;
 
     private PublicKey publicKey = null;
     private PrivateKey privateKey = null;
@@ -145,6 +151,7 @@ public class JwtComponent implements JwtConfig {
         if (props == null || props.isEmpty()) {
             return;
         }
+        workloadIdentityClaim = JwtUtils.trimIt((String) props.get(JwtUtils.CFG_KEY_WORKLOAD_IDENTITY_CLAIM));
         issuer = JwtUtils.trimIt((String) props.get(JwtUtils.CFG_KEY_ID));
         issuerUrl = JwtUtils.trimIt((String) props.get(JwtUtils.CFG_KEY_ISSUER));
         isJwkEnabled = (Boolean) props.get(JwtUtils.CFG_KEY_JWK_ENABLED);
@@ -171,12 +178,13 @@ public class JwtComponent implements JwtConfig {
         // Rotation time is in minutes, so convert value to milliseconds
         jwkRotationTime = jwkRotationTime * 60 * 1000;
         jwkSigningKeySize = ((Long) props.get(JwtUtils.CFG_KEY_JWK_SIGNING_KEY_SIZE)).intValue();
+        jwkMaxKeys = (Integer) props.get(JwtUtils.CFG_KEY_JWK_MAX_KEYS);
         nbfOffsetTime = ((Long) props.get(JwtUtils.CFG_KEY_NBF_OFFSET)).longValue();
         amrAttributes = JwtUtils.trimIt((String[]) props.get(JwtUtils.CFG_AMR_ATTR));
         loadJweConfigOptions(props);
 
         if (isJwkCapableSigAlgorithm()) {
-            initializeJwkProvider(this);
+            initializeJwkProvider();
         }
 
         // expiresInSeconds wins if present
@@ -184,6 +192,51 @@ public class JwtComponent implements JwtConfig {
             valid = expiresInSeconds;
         } else {
             valid = valid * 3600;
+        }
+
+        if (isRunningBetaMode()) {
+            checkIfJwtOutlivesJwk();
+            checkWorkloadIdentityClaimConflicts();
+        }
+    }
+
+    private void checkIfJwtOutlivesJwk() {
+        if (!isJwkEnabled) {
+            return;
+        }
+
+        // jwkRotationTime is in milliseconds; valid is in seconds.
+        // A signing key stays in the JWK set for jwkMaxKeys rotation periods.
+        // If that window < token lifetime, tokens can outlive their signing key.
+        long keyWindowInSeconds = (jwkRotationTime / 1000L) * jwkMaxKeys;
+        if (keyWindowInSeconds < valid) {
+            long jwkRotationTimeInMinutes = jwkRotationTime / 60000L;
+            Tr.warning(tc, "JWK_KEY_COVERAGE_WINDOW_TOO_SHORT", new Object[] { issuer, jwkRotationTimeInMinutes, jwkMaxKeys, valid });
+        }
+    }
+
+    private void checkWorkloadIdentityClaimConflicts() {
+        if (workloadIdentityClaim == null) {
+            return;
+        }
+
+        if (workloadIdentityClaim.equals("iss") && issuerUrl != null) {
+            String msg = Tr.formatMessage(tc, "JWT_WORKLOAD_IDENTITY_CLAIM_CONFLICTS_WITH_CONFIG", new Object[] { issuer, workloadIdentityClaim, JwtUtils.CFG_KEY_ISSUER, issuerUrl, workloadIdentityClaim, JwtUtils.CFG_KEY_ISSUER });
+            throw new IllegalStateException(msg);
+        } else if (workloadIdentityClaim.equals("aud") && audiences != null) {
+            String msg = Tr.formatMessage(tc, "JWT_WORKLOAD_IDENTITY_CLAIM_CONFLICTS_WITH_CONFIG", new Object[] { issuer, workloadIdentityClaim, JwtUtils.CFG_KEY_AUDIENCES, audiences, workloadIdentityClaim, JwtUtils.CFG_KEY_AUDIENCES });
+            throw new IllegalStateException(msg);
+        } else if (workloadIdentityClaim.equals("scope") && scope != null) {
+            String msg = Tr.formatMessage(tc, "JWT_WORKLOAD_IDENTITY_CLAIM_CONFLICTS_WITH_CONFIG", new Object[] { issuer, workloadIdentityClaim, JwtUtils.CFG_KEY_SCOPE, scope, workloadIdentityClaim, JwtUtils.CFG_KEY_SCOPE });
+            throw new IllegalStateException(msg);
+        } else if (workloadIdentityClaim.equals("jti") && jti) {
+            String msg = Tr.formatMessage(tc, "JWT_WORKLOAD_IDENTITY_CLAIM_CONFLICTS_WITH_CONFIG", new Object[] { issuer, workloadIdentityClaim, JwtUtils.CFG_KEY_JTI, jti, workloadIdentityClaim, JwtUtils.CFG_KEY_JTI });
+            throw new IllegalStateException(msg);
+        }
+
+        if (claims != null && claims.contains(workloadIdentityClaim)) {
+            String msg = Tr.formatMessage(tc, "JWT_WORKLOAD_IDENTITY_CLAIM_CONFLICTS_WITH_CONFIG", new Object[] { issuer, workloadIdentityClaim, JwtUtils.CFG_KEY_CLAIMS, claims, workloadIdentityClaim, JwtUtils.CFG_KEY_CLAIMS });
+            throw new IllegalStateException(msg);
         }
     }
 
@@ -194,17 +247,10 @@ public class JwtComponent implements JwtConfig {
         return (KeyAlgorithmChecker.isRSAlgorithm(sigAlg) || KeyAlgorithmChecker.isESAlgorithm(sigAlg));
     }
 
-    private void initializeJwkProvider(JwtConfig jwtConfig) {
-
-        if (jwtConfig == null) {
-            if (tc.isDebugEnabled()) {
-                Tr.debug(tc, "No config object found");
-            }
-            return;
-        }
-        if (jwtConfig.isJwkEnabled()) {
-            jwkProvider = new JWKProvider(jwtConfig.getJwkSigningKeySize(), jwtConfig.getSignatureAlgorithm(),
-                    jwtConfig.getJwkRotationTime());
+    private void initializeJwkProvider() {
+        if (isJwkEnabled()) {
+            jwkProvider = new JWKProvider(getJwkSigningKeySize(), getSignatureAlgorithm(),
+                    getJwkRotationTime(), getJwkMaxKeys());
         }
     }
 
@@ -301,6 +347,61 @@ public class JwtComponent implements JwtConfig {
     }
 
     @Override
+    public String getWorkloadIdentityClaim() {
+        return workloadIdentityClaim;
+    }
+
+    @Override
+    public String getWorkloadIdentity() {
+        return getHost() + "," + getUsrDir() + "," + getServerName() + "," + getAppName();
+    }
+
+    private String getHost() {
+        String host = System.getenv("CONTAINER_HOST");
+        if (host == null) {
+            host = serverInfoMBean.getDefaultHostname();
+        }
+        if (host == null || host.equals("localhost")) {
+            host = getCanonicalHostName();
+        }
+        return host;
+    }
+
+    private String getCanonicalHostName() {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<String>() {
+                @Override
+                public String run() throws UnknownHostException {
+                    return InetAddress.getLocalHost().getCanonicalHostName();
+                }
+            });
+        } catch (PrivilegedActionException pae) {
+            return "";
+        }
+    }
+
+    private String getUsrDir() {
+        String usrDir = serverInfoMBean.getUserDirectory();
+        return usrDir;
+    }
+
+    private String getServerName() {
+        String serverName = System.getenv("CONTAINER_NAME");
+        if (serverName == null) {
+            serverName = serverInfoMBean.getName();
+        }
+        return serverName;
+    }
+
+    private String getAppName() {
+        return ComponentMetaDataAccessorImpl
+                .getComponentMetaDataAccessor()
+                .getComponentMetaData()
+                .getJ2EEName()
+                .getApplication();
+    }
+
+    @Override
     public String getJwkJsonString() {
         if (!isJwkEnabled() && jwkProvider == null) {
             // create jwk from x509 certificate.
@@ -327,14 +428,16 @@ public class JwtComponent implements JwtConfig {
         return jwkProvider != null ? jwkProvider.getJWK() : null;
     }
 
-    @Override
-    public long getJwkRotationTime() {
+    private long getJwkRotationTime() {
         return jwkRotationTime;
     }
 
-    @Override
-    public int getJwkSigningKeySize() {
+    private int getJwkSigningKeySize() {
         return jwkSigningKeySize;
+    }
+
+    private int getJwkMaxKeys() {
+        return jwkMaxKeys;
     }
 
     @Override
@@ -435,6 +538,18 @@ public class JwtComponent implements JwtConfig {
     @Override
     public long getNbfOffsetTime() {
         return nbfOffsetTime;
+    }
+
+    private boolean isRunningBetaMode() {
+        if (!ProductInfo.getBetaEdition()) {
+            return false;
+        } else {
+            if (!issuedBetaMessage) {
+                Tr.info(tc, "BETA: A beta method has been invoked for the class BuilderImpl for the first time.");
+                issuedBetaMessage = true;
+            }
+            return true;
+        }
     }
 
 }

@@ -13,7 +13,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -24,6 +27,7 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.json.JSONObject;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -90,15 +94,17 @@ public class KeycloakContainer extends org.testcontainers.containers.GenericCont
         withExposedPorts(8080, 8443);
         withStartupAttempts(3);
         withCopyToContainer(buildKeycloakKeystore(), "/keystore.p12");
-        withEnv("KEYCLOAK_ADMIN", "admin");
-        withEnv("KEYCLOAK_ADMIN_PASSWORD", "admin");
+        withEnv("KC_BOOTSTRAP_ADMIN_USERNAME", "admin");
+        withEnv("KC_BOOTSTRAP_ADMIN_PASSWORD", "admin");
+        withEnv("KC_SPI_ADMIN_REALM", "primary");
         withCommand("start-dev",
                     "--https-key-store-file=/keystore.p12",
                     "--https-key-store-password=password",
                     "--hostname-strict=false");
         withLogConsumer(new SimpleLogConsumer(KeycloakContainer.class, "keycloak-container"));
+        // Allow up to 5 minutes for busy or remote CI build machines.
         waitingFor(Wait.forLogMessage(".*Listening on:.*", 1)
-                       .withStartupTimeout(Duration.ofMinutes(2)));
+                       .withStartupTimeout(Duration.ofMinutes(5)));
     }
 
     // Public API
@@ -118,9 +124,9 @@ public class KeycloakContainer extends org.testcontainers.containers.GenericCont
      */
     public synchronized void setupRealm() throws Exception {
 
-        // Authenticate kcadm against the master realm
+        // Authenticate kcadm against the primary realm
         run("/opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 " +
-            "--realm master --user admin --password admin");
+            "--realm primary --user admin --password admin");
 
         // Create application realm
         run("/opt/keycloak/bin/kcadm.sh create realms -s realm=" + REALM + " -s enabled=true");
@@ -282,6 +288,57 @@ public class KeycloakContainer extends org.testcontainers.containers.GenericCont
         } catch (Exception e) {
             throw new RuntimeException("Failed to create Keycloak HTTP client", e);
         }
+    }
+
+    /**
+     * Performs an OAuth 2.0 Resource Owner Password Credentials grant against
+     * the specified token endpoint and returns the access token string.
+     *
+     * @param tokenEndpoint the full URL of the token endpoint
+     * @param username the resource owner username
+     * @param password the resource owner password
+     * @return the access token string
+     * @throws Exception if the token request fails
+     */
+    public String obtainAccessToken(String tokenEndpoint, String username, String password) throws Exception {
+        String formData = String.join("&",
+                                      "client_id=" + URLEncoder.encode(PUBLIC_CLIENT_ID, StandardCharsets.UTF_8),
+                                      "username=" + URLEncoder.encode(username, StandardCharsets.UTF_8),
+                                      "password=" + URLEncoder.encode(password, StandardCharsets.UTF_8),
+                                      "grant_type=password");
+
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                                                                     .uri(URI.create(tokenEndpoint))
+                                                                     .header("Content-Type", "application/x-www-form-urlencoded")
+                                                                     .POST(java.net.http.HttpRequest.BodyPublishers.ofString(formData))
+                                                                     .build();
+
+        java.net.http.HttpResponse<String> response = getHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Token request failed. Status: " + response.statusCode()
+                                       + "\nBody: " + response.body());
+        }
+
+        JSONObject json = new JSONObject(response.body());
+        String accessToken = json.optString("access_token", null);
+        if (accessToken == null) {
+            throw new RuntimeException("No access_token in token response: " + response.body());
+        }
+        return accessToken;
+    }
+
+    /**
+     * Performs an OAuth 2.0 Resource Owner Password Credentials grant against
+     * the default Keycloak token endpoint and returns the access token string.
+     *
+     * @param username the resource owner username
+     * @param password the resource owner password
+     * @return the access token string
+     * @throws Exception if the token request fails
+     */
+    public String obtainAccessToken(String username, String password) throws Exception {
+        String tokenEndpoint = getBaseUrl() + "/realms/" + REALM + "/protocol/openid-connect/token";
+        return obtainAccessToken(tokenEndpoint, username, password);
     }
 
     /**

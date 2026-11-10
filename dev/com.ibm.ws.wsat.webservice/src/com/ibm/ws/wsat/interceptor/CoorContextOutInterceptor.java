@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2024 IBM Corporation and others.
+ * Copyright (c) 2019, 2026 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
@@ -37,6 +37,7 @@ import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.ws.ffdc.FFDCFilter;
 import com.ibm.ws.jaxws.bus.LibertyApplicationBus;
 import com.ibm.ws.jaxws.wsat.Constants.AssertionStatus;
+import com.ibm.ws.jaxws.wsat.components.WSATConfigService;
 import com.ibm.ws.wsat.service.WSATContext;
 import com.ibm.ws.wsat.service.WSATException;
 import com.ibm.ws.wsat.service.WSATUtil;
@@ -49,7 +50,7 @@ import com.ibm.ws.wsat.webservice.client.wscoor.CoordinationContext;
  */
 public class CoorContextOutInterceptor extends AbstractPhaseInterceptor<Message> {
 
-    final TraceComponent tc = Tr.register(
+    private static final TraceComponent tc = Tr.register(
                                           CoorContextOutInterceptor.class, WSCoorConstants.TRACE_GROUP, null);
     private AssertionStatus isOptional;
 
@@ -89,6 +90,21 @@ public class CoorContextOutInterceptor extends AbstractPhaseInterceptor<Message>
             isOptional = AssertionStatus.FALSE;
         } else {
             isOptional = WSCoorUtil.isOptional(message, false);
+        }
+
+        // check_wsdl mode: skip outbound WS-AT context when the target endpoint has no assertion or
+        // policy cannot be determined (isOptional == AssertionStatus.NULL).
+        // By design, treating "cannot determine" (e.g. missing Endpoint, no EffectivePolicy, dynamic Dispatch
+        // clients without WSDL) identically to "no assertion" is a deliberate choice: outbound WS-AT context
+        // propagation is suppressed and the request proceeds as a plain SOAP call unless an explicit WS-AT
+        // policy assertion is present on the target endpoint.
+        WSATConfigService configService = WSCoorUtil.getConfigService();
+        if (configService != null && configService.isCheckWsdlMode()
+                && isOptional == AssertionStatus.NULL) {
+            if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled())
+                Tr.debug(tc, "handleMessage",
+                         "check_wsdl mode: no WS-AT assertion on endpoint, skipping context propagation");
+            return;
         }
 
         boolean inTrans = false;

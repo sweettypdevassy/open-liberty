@@ -154,3 +154,19 @@ ZOSAIO_ACTIVATED.useraction=Nincs teend\u0151.
 ZOSAIO_DEACTIVATED=CWWKO0230I: A z/OS nat\u00edv aszinkron I/O t\u00e1mogat\u00e1sa le lett \u00e1ll\u00edtva.
 ZOSAIO_DEACTIVATED.explanation=A z/OS szolg\u00e1ltat\u00e1son le lett \u00e1ll\u00edtva a Liberty aszinkron TCP/IP sockets I/O, ami az oper\u00e1ci\u00f3s rendszer szintj\u00e9n biztos\u00edtja az aszinkron I/O csomag alapvet\u0151 k\u00e9pess\u00e9geit.
 ZOSAIO_DEACTIVATED.useraction=Nincs teend\u0151.
+
+netty.handler.removed.from.pipeline=CWWKO0231W: Az \u201e {0} \u201d Netty csatornakezel\u0151 elt\u00e1vol\u00edt\u00e1sra ker\u00fclt egy akt\u00edv kapcsolati csatorn\u00e1b\u00f3l.
+netty.handler.removed.from.pipeline.explanation=A kapcsolat megfelel\u0151 m\u0171k\u00f6d\u00e9s\u00e9hez sz\u00fcks\u00e9ges \u201e Netty \u201d csatorna-kezel\u0151 v\u00e1ratlanul elt\u00e1vol\u00edt\u00e1sra ker\u00fclt, mik\u00f6zben a csatorna akt\u00edv volt.
+netty.handler.removed.from.pipeline.useraction=Ha ez az \u00fczenet tov\u00e1bbra is megjelenik, gy\u0171jts\u00f6n \u00f6ssze diagnosztikai nyomk\u00f6vet\u00e9si adatokat, majd vegye fel a kapcsolatot a IBM \u00fcgyf\u00e9lszolg\u00e1lattal.
+
+# read.timeout=CWWKO1713W: An HTTP read operation timed out: {0}
+# read.timeout.explanation=An inbound HTTP connection did not receive data within the configured read timeout period.
+# read.timeout.useraction=Check the network connection or increase the read timeout value in the HTTP endpoint configuration.
+
+# write.timeout=CWWKO1714W: An HTTP write operation timed out: {0}
+# write.timeout.explanation=An outbound HTTP write operation did not complete within the configured write timeout period.
+# write.timeout.useraction=Check the network connection or increase the write timeout value in the HTTP endpoint configuration.
+
+# h2.idle.timeout=CWWKO1715W: An HTTP/2 connection closed because of an idle timeout: {0}
+# h2.idle.timeout.explanation=The HTTP/2 connection was idle for longer than the configured idle timeout period, so the server closed the connection.
+# h2.idle.timeout.useraction=Check the network connection or increase the HTTP/2 connection idle timeout value in the HTTP endpoint configuration.

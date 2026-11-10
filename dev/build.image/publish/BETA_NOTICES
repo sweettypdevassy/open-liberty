@@ -123,8 +123,8 @@ Apache MyFaces JSF-2.3 Core Impl [myfaces-impl],
 Apache MyFaces JSF-3.0 Core API [myfaces-api],
 Apache MyFaces JSF-3.0 Core Impl [myfaces-impl], Apache Neethi [neethi],
 Apache Velocity [velocity], Apache Velocity - Engine [velocity-engine-core],
-Bean Validation API [validation-api], Bouncy Castle OpenPGP APIs [bcpg-jdk18on],
-CDI APIs [cdi-api], CDI APIs [jakarta.enterprise.cdi-api],
+Bean Validation API [validation-api], CDI APIs [cdi-api],
+CDI APIs [jakarta.enterprise.cdi-api],
 CDI EL integration API [jakarta.enterprise.cdi-el-api],
 CDI Language Model [jakarta.enterprise.lang-model],
 CDI Lite Extension Translator [weld-lite-extension-translator],
@@ -215,12 +215,10 @@ OpenTelemetry Instrumentation for Java [opentelemetry-instrumentation-api-semcon
 OpenTelemetry Instrumentation for Java [opentelemetry-instrumentation-api-incubator],
 OpenTelemetry Java [opentelemetry-exporter-otlp-common],
 OpenTelemetry Java [opentelemetry-exporter-jaeger],
-OpenTelemetry Java [opentelemetry-context],
 OpenTelemetry Java [opentelemetry-sdk-trace],
 OpenTelemetry Java [opentelemetry-sdk-metrics],
 OpenTelemetry Java [opentelemetry-sdk],
 OpenTelemetry Java [opentelemetry-sdk-common],
-OpenTelemetry Java [opentelemetry-api],
 OpenTelemetry Java [opentelemetry-semconv],
 OpenTelemetry Java [opentelemetry-sdk-extension-autoconfigure],
 OpenTelemetry Java [opentelemetry-exporter-logging],
@@ -230,7 +228,6 @@ OpenTelemetry Java [opentelemetry-sdk-extension-autoconfigure-spi],
 OpenTelemetry Java [opentelemetry-sdk-logs],
 OpenTelemetry Java [opentelemetry-api-logs],
 OpenTelemetry Java [opentelemetry-exporter-common],
-OpenTelemetry Java [opentelemetry-extension-trace-propagators],
 OpenTelemetry Java [opentelemetry-sdk],
 OpenTelemetry Java [opentelemetry-exporter-otlp],
 OpenTelemetry Java [opentelemetry-exporter-sender-okhttp],
@@ -238,12 +235,9 @@ OpenTelemetry Java [opentelemetry-exporter-otlp-common],
 OpenTelemetry Java [opentelemetry-sdk-metrics],
 OpenTelemetry Java [opentelemetry-exporter-common],
 OpenTelemetry Java [opentelemetry-api-events],
-OpenTelemetry Java [opentelemetry-api],
 OpenTelemetry Java [opentelemetry-extension-incubator],
 OpenTelemetry Java [opentelemetry-sdk-logs],
 OpenTelemetry Java [opentelemetry-sdk-extension-autoconfigure-spi],
-OpenTelemetry Java [opentelemetry-context],
-OpenTelemetry Java [opentelemetry-extension-trace-propagators],
 OpenTelemetry Java [opentelemetry-semconv],
 OpenTelemetry Java [opentelemetry-sdk-common],
 OpenTelemetry Java [opentelemetry-sdk-trace],
@@ -270,11 +264,8 @@ OpenTelemetry Java [opentelemetry-exporter-sender-okhttp],
 OpenTelemetry Java [opentelemetry-exporter-otlp],
 OpenTelemetry Java [opentelemetry-exporter-zipkin],
 OpenTelemetry Java [opentelemetry-exporter-otlp-common],
-OpenTelemetry Java [opentelemetry-extension-trace-propagators],
-OpenTelemetry Java [opentelemetry-api],
 OpenTelemetry Java [opentelemetry-sdk-logs],
 OpenTelemetry Java [opentelemetry-sdk-extension-autoconfigure],
-OpenTelemetry Java [opentelemetry-context],
 OpenTelemetry Java [opentelemetry-exporter-common],
 OpenTelemetry Java [opentelemetry-sdk-trace],
 OpenTelemetry Java [opentelemetry-sdk-common],
@@ -287,6 +278,8 @@ OpenTelemetry Java [opentelemetry-sdk-extension-autoconfigure-spi],
 OpenTelemetry Java [opentelemetry-exporter-logging],
 OpenTelemetry Java [opentelemetry-api-incubator],
 OpenTelemetry Java [opentelemetry-exporter-zipkin],
+OpenTelemetry Java [opentelemetry-common], OpenTelemetry Java [opentelemetry-api],
+OpenTelemetry Java [opentelemetry-context],
 OpenTelemetry Java [opentelemetry-extension-trace-propagators],
 OpenTelemetry Semantic Conventions Java [opentelemetry-semconv-incubating],
 OpenTelemetry Semantic Conventions Java [opentelemetry-semconv],
@@ -332,6 +325,8 @@ SmallRye Mutiny Zero JDK Flow / Reactive Streams Adapters [mutiny-zero-flow-adap
 SmallRye Reactive Messaging : API [smallrye-reactive-messaging-api],
 SmallRye Reactive Messaging : Provider [smallrye-reactive-messaging-provider],
 SmallRye: Common classes [smallrye-config-common],
+SmallRye: GraphQL Client :: API [smallrye-graphql-client-api],
+SmallRye: GraphQL Client :: Implementation [smallrye-graphql-client],
 SmallRye: GraphQL Common :: Schema Builder [smallrye-graphql-schema-builder],
 SmallRye: GraphQL Common :: Schema Model [smallrye-graphql-schema-model],
 SmallRye: GraphQL Server :: API [smallrye-graphql-api],
@@ -359,7 +354,6 @@ XML Commons Resolver Component [xml-resolver], XmlSchema Core [xmlschema-core],
 Zipkin Core Library [zipkin], Zipkin Reporter: Core [zipkin-reporter],
 Zipkin Sender: OkHttp 3 [zipkin-sender-okhttp3], acme4j Client [acme4j-client],
 acme4j Utils [acme4j-utils], asyncutil, b4a, bare-events, carbon-components,
-carbon-components [carbon-components-10.42.0-rc.0.min.js],
 classfilewriter [jboss-classfilewriter], commons-weaver-privilizer,
 cxf-rt-security, cxf-rt-security-saml, cxf-rt-ws-security, dompurify,
 error-prone annotations [error_prone_annotations], events-universal,
@@ -667,12 +661,12 @@ Codemodel Core [codemodel] (Copyright 2010-2023 Oracle and/or its affiliates) (C
 DTD Parser [dtd-parser] (Copyright 1998-2018 Oracle and/or its affiliates) (Copyright 2017-2018 Oracle and/or its affiliates) (Eclipse Foundation)
 DTD Parser [dtd-parser] (Copyright 1998-2021 Oracle and/or its affiliates) (Copyright 2017-2018 Oracle and) (Copyright 2017-2018 Oracle and/or its affiliates) (Eclipse Foundation)
 DTD Parser [dtd-parser] (Copyright 1998-2022 Oracle and/or its affiliates) (Copyright 2017-2018 Oracle and/or its affiliates) (Eclipse Foundation)
-EclipseLink Core [org.eclipse.persistence.core] (Copyright 2007 Eclipse Foundation, Inc. and its licensors) (Copyright 2019-2025 Oracle and/or its affiliates) (Copyright 2026 Contributors to the Eclipse Foundation) (Copyright Oracle and/or its affiliates) (Eclipse.org - EclipseLink Project)
+EclipseLink Core [org.eclipse.persistence.core] (Copyright 2007 Eclipse Foundation, Inc. and its licensors) (Copyright 2019-2025 Oracle and/or its affiliates) (Copyright 2026 Contributors to the Eclipse Foundation) (Eclipse.org - EclipseLink Project)
 Extended StAX API [stax-ex] (Copyright 1997-2020 Oracle and/or its affiliates) (Copyright 2017 Oracle and/or its affiliates) (Copyright 2018-2019 Oracle and/or its affiliates) (Eclipse Foundation)
 Extended StAX API [stax-ex] (Copyright 1997-2021 Oracle and) (Copyright 1997-2021 Oracle and/or its affiliates) (Copyright 2017 Oracle and/or its affiliates) (Eclipse Foundation)
 Extended StAX API [stax-ex] (Copyright 1997-2022 Oracle and/or its affiliates) (Copyright 2017 Oracle and/or its affiliates) (Eclipse Foundation)
 GMBAL (API only) [gmbal-api-only] (Copyright 2018 Oracle and/or its affiliates) (Copyright 2019-2021 Oracle and/or its affiliates) (Eclipse Foundation)
-Hamcrest Core [hamcrest-core] (Copyright 2000-2006 www.hamcrest.org) (Hamcrest)
+Hamcrest Core [hamcrest-core] (Copyright 2000-2006 www.hamcrest.org) (Copyright 2006 Hamcrest)
 JAX-WS RI Runtime (jaxws-rt) [jaxws-rt] (Copyright 2017 Oracle and/or its affiliates) (Copyright 2018-2021 Oracle and/or its affiliates) (Eclipse Foundation)
 JAX-WS RI Tools (jaxws-tools) [jaxws-tools] (Copyright 2017 Oracle and/or its affiliates) (Copyright 2018-2021 Oracle and/or its affiliates) (Eclipse Foundation)
 JAXB Core [jaxb-core] (Copyright 2018 Oracle and/or its affiliates) (Copyright 2020 Oracle and/or its affiliates) (Eclipse Foundation)
@@ -819,6 +813,7 @@ The Program includes some or all of the following that IBM obtained
 under the Bouncy Castle License:
 
 Bouncy Castle ASN.1 Extension and Utility APIs [bcutil-jdk18on],
+Bouncy Castle OpenPGP APIs [bcpg-jdk18on],
 Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs [bcpkix-jdk15on],
 Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs [bcpkix-jdk18on],
 Bouncy Castle Provider [bcprov-jdk15on], Bouncy Castle Provider [bcprov-jdk18on]
@@ -857,7 +852,7 @@ JavaBeans Activation Framework (JAF) [activation] http://java.sun.com/products/j
 activation (https://github.com/javaee/activation/tree/JAF-1_2_0)
 connector (https://mvnrepository.com/artifact/javax.resource/connector-api)
 el (https://github.com/javaee/uel-ri)
-javax.json(https://repo1.maven.org/maven2/javax/json/javax.json-api/)
+javax.json (https://repo1.maven.org/maven2/javax/json/javax.json-api/)
 jaxrpc (https://github.com/javaee/jax-rpc-ri)
 jaxws-api (https://github.com/javaee/jax-ws-spec)
 jcdi (https://repo1.maven.org/maven2/javax/enterprise/cdi-api/1.0/cdi-api-1.0-sources.jar)
@@ -911,7 +906,7 @@ javax.annotation API [javax.annotation-api] http://jcp.org/en/jsr/detail?id=250
 javax.ejb API [javax.ejb-api] https://glassfish.java.net
 javax.enterprise.concurrent-api http://www.oracle.com/
 javax.interceptor API [javax.interceptor-api] https://glassfish.java.net
-javax.json(https://repo1.maven.org/maven2/javax/json/javax.json-api/)
+javax.json (https://repo1.maven.org/maven2/javax/json/javax.json-api/)
 javax.json.bind-api https://javaee.github.io/jsonb-spec
 javax.resource API [javax.resource-api] https://glassfish.java.net
 javax.ws.rs-api http://www.oracle.com/
@@ -1023,12 +1018,13 @@ jakarta.xml.soap-api (https://github.com/javaee/javax.xml.soap)
 javax.transaction API [jakarta.transaction-api] https://projects.eclipse.org/projects/ee4j.jta
 javax.transaction API [jboss-transaction-api_1.3_spec] https://github.com/eclipse-ee4j
 javax.ws.rs-api [jakarta.ws.rs-api] https://github.com/eclipse-ee4j/jaxrs-api
-javax.ws.rs-api (https://www.eclipse.org/org/foundation/)
+javax.ws.rs-api https://www.eclipse.org/org/foundation/
 jboss-jakarta-ejb-api_spec [jboss-ejb-api_3.2_spec] https://github.com/eclipse-ee4j/ejb-api
 jboss-jakarta-jaxrs-api_spec [jboss-jaxrs-api_2.1_spec] http://www.jboss.org
 org.eclipse.persistence.jpa (https://github.com/jakartaee/persistence)
 org.eclipse.persistence.jpa.jpql (http://www.eclipse.org/eclipselink)
-org.eclipse.yasson [yasson] (https://projects.eclipse.org/projects/ee4j.yasson)
+org.eclipse.yasson [yasson] https://projects.eclipse.org/projects/ee4j.yasson
+
 
 
 END OF ECLIPSE PUBLIC LICENSE, VERSION 2 NOTICES AND INFORMATION
@@ -1048,7 +1044,6 @@ JBoss Logging I18n Annotation Processor [jboss-logging-processor] (Copyright 201
 Narayana LRA [narayana-lra] (Copyright 2017 Red Hat, Inc. and/or its affiliates)
 Narayana: ArjunaCore arjuna [arjuna] (Copyright 2008 Red Hat Middleware)
 Narayana: common [common] (Copyright 2008 Red Hat Middleware LLC, and others contributors as indicated by the @authors tag)
-lra-service-base (Copyright 2017 Red Hat, Inc., and individual contributors)
 
 
                   GNU LESSER GENERAL PUBLIC LICENSE
@@ -1584,6 +1579,7 @@ Animal Sniffer Annotations [animal-sniffer-annotations] (Codehaus) (Copyright 20
 Animal Sniffer Annotations [animal-sniffer-annotations] (Copyright 2009 codehaus.org) (MojoHaus)
 Checker Qual [checker-compat-qual](Copyright Not Found)
 Checker Qual [checker-qual] (Copyright 2004 by the Checker Framework developers)
+SLF4J API Module [slf4j-api] (Copyright 2005 QOS.ch)
 SLF4J API Module [slf4j-api] (QOS.ch)
 SLF4J JDK14 Binding [slf4j-jdk14] (QOS.ch)
 ansi-regex (Copyright Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com))
@@ -1593,7 +1589,7 @@ async (Copyright 2010-2018 Caolan McMahon)
 autolinker (Copyright 2014 Gregory Jacobs (http://greg-jacobs.com))
 available-typed-arrays (Copyright 2020 Inspect JS)
 base64-js (Copyright 2014 Jameson Little)
-bootstrap (Copyright 2011-2021 The Bootstrap Authors) (Copyright 2011-2021 Twitter, Inc) (Copyright 2011-2021 ode and documentation copyright) (Copyright and license" (#copyright-and-license))
+bootstrap (Copyright 2011-2021 The Bootstrap Authors) (Copyright 2011-2021 Twitter, Inc)
 braces (Copyright 2014 Jon Schlinkert) (Copyright 2019 Jon Schlinkert" (https://github.com/jonschlinkert))
 buffer (Copyright Feross Aboukhadijeh, and other contributors)
 cacheable-lookup (Copyright 2019 Szymon Marczak)
@@ -1608,7 +1604,7 @@ character-reference-invalid (Copyright 2015 Titus Wormer <tituswormer@gmail.com>
 ci-info (Copyright 2016-2018 Thomas Watson Steen)
 classnames (Copyright 2018 Jed Watson)
 clone (Copyright 2015 Paul Vorbach)
-clone-response (Copyright 2017 Luke Childs) (Copyright Luke Childs)
+clone-response (Copyright 2017 Luke Childs)
 color (Copyright 2012 Heather Arthur)
 color-convert (Copyright 2011-2016 Heather Arthur <fayearthur@gmail.com>) (Copyright 2011-2016 Heather Arthur and Josh Junon)
 color-name (Copyright 2015 Dmitry Ivanov)
@@ -1655,6 +1651,7 @@ get-stream (Copyright Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorh
 globals (Copyright Sindre Sorhus) (Copyright Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com))
 gopd (Copyright 2022 Jordan Harband)
 got (Copyright Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com))
+graphql-java (Copyright 2015 Andreas Marek and Contributors)
 graphql-java (Copyright 2015 Andreas Marek and Contributors) (Copyright 2015 Andreas Marek and Contributors Permission is hereby granted, free of charge, to any person obtaining)
 has-property-descriptors (Copyright 2022 Inspect JS)
 has-symbols (Copyright 2016 Jordan Harband)
@@ -1748,7 +1745,7 @@ require-directory (Copyright 2011 Troy Goode <troygoode@gmail.com>)
 requires-port (Copyright 2015 Unshift.io, Arnout Kazemier,  the Contributors)
 reselect (Copyright 2015-2018 Reselect Contributors)
 resolve-alpn (Copyright 2018 Szymon Marczak)
-responselike (Copyright 2017 Luke Childs) (Copyright Luke Childs)
+responselike (Copyright 2017 Luke Childs)
 ret (Copyright 2011 by fent)
 reusify (Copyright 2015 Matteo Collina)
 run-parallel (Copyright Feross Aboukhadijeh)

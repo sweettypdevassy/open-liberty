@@ -11,6 +11,7 @@ package io.openliberty.data.internal;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
@@ -39,10 +40,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.ibm.websphere.ras.annotation.Trivial;
+import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 
 import io.openliberty.data.internal.cdi.RepositoryProducer;
 import jakarta.data.Order;
@@ -58,6 +62,20 @@ import jakarta.transaction.Status;
  * A location for helper methods that do not require any state.
  */
 public class Util {
+    /**
+     * jakarta.enterprise.concurrent.Asynchronous.class; null if unavailable
+     */
+    private static final Class<? extends Annotation> ASYNCHRONOUS_ANNO_CLASS = //
+                    loadAsyncAnnoClass();
+
+    /**
+     * Asynchronous repository method return types that allow for chaining
+     * dependent stages.
+     */
+    public static final Set<Class<?>> ASYNC_STAGE_RETURN_TYPES = //
+                    Set.of(CompletionStage.class,
+                           CompletableFuture.class);
+
     /**
      * Class name of the Jakarta Persistence AttributeConverter
      */
@@ -79,9 +97,19 @@ public class Util {
                             Update.class.getSimpleName());
 
     /**
+     * Query hint and map key for a fetch graph.
+     */
+    public static final String FETCHGRAPH = "jakarta.persistence.fetchgraph";
+
+    /**
      * Query hint and map key for a load graph.
      */
-    static final String LOADGRAPH = "jakarta.persistence.loadgraph";
+    public static final String LOADGRAPH = "jakarta.persistence.loadgraph";
+
+    /**
+     * Query hint and map key for a lock scope.
+     */
+    public static final String LOCK_SCOPE = "jakarta.persistence.lock.scope";
 
     /**
      * List of valid prefixes for Query by Method Name methods of a stateful
@@ -201,16 +229,6 @@ public class Util {
                            java.util.Calendar.class, // deprecated in JPA 3.2
                            java.util.Date.class, // deprecated in JPA 3.2
                            ZonedDateTime.class); // would be useful if it worked
-
-    /**
-     * Valid types for when a repository method computes an update count
-     */
-    public static final Set<Class<?>> UPDATE_COUNT_TYPES = //
-                    Set.of(boolean.class, Boolean.class,
-                           int.class, Integer.class,
-                           long.class, Long.class,
-                           void.class, Void.class,
-                           Number.class);
 
     /**
      * Valid types for jakarta.persistence.Version, except for
@@ -358,6 +376,24 @@ public class Util {
         NON_ENTITY_RESULT_TYPES.add(BigInteger.class);
         NON_ENTITY_RESULT_TYPES.add(Object.class);
         NON_ENTITY_RESULT_TYPES.add(String.class);
+    }
+
+    /**
+     * Attempt to load the class for Jakarta Concurrency's Asynchronous annotation.
+     *
+     * @return the class if available; otherwise null
+     */
+    @FFDCIgnore(ClassNotFoundException.class)
+    private static Class<? extends Annotation> loadAsyncAnnoClass() {
+        try {
+            @SuppressWarnings("unchecked")
+            Class<? extends Annotation> c = (Class<? extends Annotation>) //
+            Util.class.getClassLoader() //
+                            .loadClass("jakarta.enterprise.concurrent.Asynchronous");
+            return c;
+        } catch (ClassNotFoundException x) {
+            return null;
+        }
     }
 
     /**
@@ -530,28 +566,112 @@ public class Util {
     }
 
     /**
+     * Determines if the Jakarta Data provider must submit a repository method
+     * to run asynchronously because it returns a completion stage, but does
+     * not have an Asynchronous annotation that would automatically cause it
+     * to run asynchronously. If the Jakarta Concurrency feature that provides
+     * the Asynchronous annotation is not enabled, the repository method is
+     * considered to not have the annotation.
+     *
+     * @param method a repository method
+     * @return true if the method meets the criteria, otherwise false.
+     */
+    @Trivial
+    static final boolean returnsCompletionStageAndLacksAsync(Method method) {
+        return ASYNC_STAGE_RETURN_TYPES.contains(method.getReturnType()) &&
+               (ASYNCHRONOUS_ANNO_CLASS == null ||
+                !method.isAnnotationPresent(ASYNCHRONOUS_ANNO_CLASS));
+    }
+
+    /**
      * Returns a textual representation of the annotation, omitting parts
      * that can be assumed. This helps make the introspector output more
      * concise and less cluttered.
      *
-     * @param anno annotation.
-     * @return a shortened textual representation of the annotation.
+     * <p>This method is proxy-safe: it uses {@link Annotation#annotationType()}
+     * and reflective member invocation rather than {@link Object#toString()},
+     * so it produces meaningful output even when the annotation object is a
+     * WELD CDI proxy (e.g. obtained via {@code AnnotatedType.getAnnotations()}).
+     * The {@code @jakarta.data.} package prefix is omitted from the type name,
+     * and members that equal their default value are omitted for brevity.
+     *
+     * @param anno annotation, which may be a CDI/WELD proxy
+     * @return a shortened textual representation of the annotation. Null if the
+     *         given anno is null
      */
     @Trivial
-    private static String toString(Annotation anno) {
-        String s = anno.toString();
+    public static String toString(Annotation anno) {
+        if (anno == null)
+            return null;
 
-        int openParen = s.indexOf('(');
-        int dot = openParen > 0 ? s.lastIndexOf('.', openParen) : -1;
-        int end = s.length() - (s.endsWith("()") ? 2 : 0);
+        Class<? extends Annotation> annoType = anno.annotationType();
 
-        // omit jakarta data package names and any ending ()
-        if (dot > 0 && s.startsWith("@jakarta.data."))
-            s = '@' + s.substring(dot + 1, end);
-        else
-            s = s.substring(0, end);
+        // Use simple name for jakarta.data.* types; fully qualified name otherwise
+        String displayName = annoType.getPackageName().startsWith("jakarta.data.") //
+                        ? annoType.getSimpleName() //
+                        : annoType.getName();
 
-        return s;
+        Method[] members = annoType.getDeclaredMethods();
+
+        // Collect non-default members
+        StringBuilder b = new StringBuilder(displayName.length() +
+                                            members.length * 40 + 1);
+        b.append('@').append(displayName);
+        boolean first = true;
+        for (Method member : members) {
+            Object value;
+            try {
+                value = member.invoke(anno);
+            } catch (Exception x) {
+                value = '?';
+            }
+            // omit members that equal their default value
+            Object defaultValue = member.getDefaultValue();
+            if (defaultValue != null) {
+                boolean isDefault;
+                if (defaultValue.getClass().isArray()) {
+                    int len = Array.getLength(defaultValue);
+                    isDefault = len == Array.getLength(value);
+                    for (int i = 0; isDefault && i < len; i++)
+                        isDefault = Array.get(defaultValue, i) //
+                                        .equals(Array.get(value, i));
+                } else {
+                    isDefault = defaultValue.equals(value);
+                }
+                if (isDefault)
+                    continue;
+            }
+            b.append(first ? "(" : ", ");
+            // omit "value=" when it is the only member (standard annotation shorthand)
+            if (members.length != 1 || !"value".equals(member.getName()))
+                b.append(member.getName()).append('=');
+            if (value instanceof String)
+                b.append('"').append(value).append('"');
+            else if (value instanceof Annotation)
+                b.append(toString((Annotation) value));
+            else if (value.getClass().isArray()) {
+                int len = Array.getLength(value);
+                b.append('{');
+                for (int i = 0; i < len; i++) {
+                    if (i > 0)
+                        b.append(", ");
+                    Object element = Array.get(value, i);
+                    if (element instanceof Annotation)
+                        b.append(toString((Annotation) element));
+                    else if (element instanceof String)
+                        b.append('"').append(element).append('"');
+                    else
+                        b.append(element);
+                }
+                b.append('}');
+            } else
+                b.append(value);
+            first = false;
+        }
+        if (!first)
+            b.append(')');
+
+        return b.toString();
     }
 
     /**
@@ -679,6 +799,20 @@ public class Util {
             }
             b.append(EOLN);
         }
+    }
+
+    /**
+     * Returns a list of readable annotations.
+     *
+     * @param annos array of annotations that might be CDI/WELD proxies.
+     * @return a list of readable annotations.
+     */
+    @Trivial
+    public static List<String> toStringList(Annotation[] annos) {
+        List<String> list = new ArrayList<>(annos.length);
+        for (Annotation anno : annos)
+            list.add(toString(anno));
+        return list;
     }
 
     /**

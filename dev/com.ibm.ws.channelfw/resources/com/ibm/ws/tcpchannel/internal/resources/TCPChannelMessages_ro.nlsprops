@@ -154,3 +154,19 @@ ZOSAIO_ACTIVATED.useraction=Nu este necesar\u0103 nicio ac\u0163iune.
 ZOSAIO_DEACTIVATED=CWWKO0230I: A fost dezactivat suportul pentru Native Asynchronous I/O for z/OS.
 ZOSAIO_DEACTIVATED.explanation=Soclurile Asynchronous TCP/IP I/O for Liberty (AsyncIO) pe serviciul z/OS, care furnizeaz\u0103 capabilit\u0103\u0163ile de baz\u0103 ale unui pachet Asynchronous I/O la nivel de sistem de operare sunt dezactivate.
 ZOSAIO_DEACTIVATED.useraction=Nici o ac\u0163iune nu este necesar\u0103.
+
+netty.handler.removed.from.pipeline=CWWKO0231W: Handlerul de canal \u201e {0} \u201d ( Netty ) a fost eliminat dintr-un pipeline de conexiuni active.
+netty.handler.removed.from.pipeline.explanation=Un handler de canal de tip \u201e Netty \u201d, necesar pentru func\u021bionarea corect\u0103 a conexiunii, a fost eliminat \u00een mod nea\u0219teptat \u00een timp ce canalul era activ.
+netty.handler.removed.from.pipeline.useraction=Dac\u0103 acest mesaj persist\u0103, colecta\u021bi informa\u021biile de urm\u0103rire pentru diagnosticare \u0219i contacta\u021bi serviciul de asisten\u021b\u0103 IBM.
+
+# read.timeout=CWWKO1713W: An HTTP read operation timed out: {0}
+# read.timeout.explanation=An inbound HTTP connection did not receive data within the configured read timeout period.
+# read.timeout.useraction=Check the network connection or increase the read timeout value in the HTTP endpoint configuration.
+
+# write.timeout=CWWKO1714W: An HTTP write operation timed out: {0}
+# write.timeout.explanation=An outbound HTTP write operation did not complete within the configured write timeout period.
+# write.timeout.useraction=Check the network connection or increase the write timeout value in the HTTP endpoint configuration.
+
+# h2.idle.timeout=CWWKO1715W: An HTTP/2 connection closed because of an idle timeout: {0}
+# h2.idle.timeout.explanation=The HTTP/2 connection was idle for longer than the configured idle timeout period, so the server closed the connection.
+# h2.idle.timeout.useraction=Check the network connection or increase the HTTP/2 connection idle timeout value in the HTTP endpoint configuration.
